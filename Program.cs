@@ -1,117 +1,72 @@
 using System;
 
-namespace JeuDuPendu
+namespace HuitMille
 {
     class Program
     {
         static void Main(string[] args)
         {
-            // --- 1. INITIALISATION DU JEU ---
+            // 1. Les seules variables dont on a besoin
+            string[] mots = { "RENDRE", "ARGENT", "REMBOURSEMENT", "DÉPOUILLER", "MERGUEZ" };
             
-            // Liste de mots possibles
-            string[] mots = { "PROGRAMMATION", "ORDINATEUR", "CLAVIER", "ECRAN", "SOURIS", "DEVELOPPEUR" };
+            // On choisit un mot au hasard dans ta liste pour créer le mot secret
+            Random generateur = new Random();
+            string motSecret = mots[generateur.Next(mots.Length)]; 
             
-            // Choisir un mot au hasard dans la liste
-            Random random = new Random();
-            int indexAleatoire = random.Next(mots.Length);
-            string motSecret = mots[indexAleatoire];
+            string lettresTestees = ""; // Va stocker toutes les lettres qu'on tape
+            int vies = 6;
 
-            // Créer le mot caché rempli de tirets du bas '_'
-            char[] motCache = new char[motSecret.Length];
-            for (int i = 0; i < motSecret.Length; i++)
+            // La boucle qui tourne tant qu'on a des vies
+            while (vies > 0)
             {
-                motCache[i] = '_';
-            }
-
-            // Variables pour suivre l'état de la partie
-            int essaisRestants = 7;
-            string lettresTestees = ""; // Stocke les lettres déjà essayées
-            bool motTrouve = false;
-
-            Console.WriteLine("Bienvenue dans le jeu du Pendu !");
-
-            // --- 2. BOUCLE PRINCIPALE DU JEU ---
-            
-            // Le jeu continue tant qu'il reste des essais ET que le mot n'est pas trouvé
-            while (essaisRestants > 0 && !motTrouve)
-            {
-                // Afficher les informations au joueur
-                Console.WriteLine("\nMot à deviner : " + new string(motCache));
-                Console.WriteLine($"Essais restants : {essaisRestants}");
-                Console.Write("Entrez une lettre : ");
-
-                // Lire ce que le joueur tape et le mettre en majuscule
-                string saisie = Console.ReadLine().ToUpper();
-
-                // Sécurité : vérifier que le joueur a bien tapé une seule lettre
-                if (saisie.Length != 1)
-                {
-                    Console.WriteLine("Veuillez entrer une seule lettre.");
-                    continue; // Recommence le début de la boucle while
-                }
-
-                // Récupérer le premier (et unique) caractère tapé
-                char lettre = saisie[0];
-
-                // Vérifier si la lettre a déjà été jouée
-                if (lettresTestees.Contains(lettre))
-                {
-                    Console.WriteLine("Vous avez déjà testé cette lettre !");
-                    continue;
-                }
-
-                // Ajouter la lettre à la liste des lettres testées
-                lettresTestees += lettre; 
-
-                // --- 3. VÉRIFICATION DE LA LETTRE ---
+                // Affichage du mot
+                string affichage = ""; 
                 
-                bool lettreTrouvee = false;
-
-                // Parcourir chaque lettre du mot secret pour voir si ça correspond
-                for (int i = 0; i < motSecret.Length; i++)
+                // On regarde chaque lettre du mot secret une par une
+                foreach (char lettre in motSecret)
                 {
-                    if (motSecret[i] == lettre)
+                    // Si on a déjà tapé cette lettre, on l'affiche, sinon on met un tiret
+                    if (lettresTestees.Contains(lettre))
                     {
-                        motCache[i] = lettre; // Remplacer le tiret par la lettre
-                        lettreTrouvee = true;
+                        affichage += lettre;
+                    }
+                    else
+                    {
+                        affichage += "_";
                     }
                 }
 
-                // Si la lettre n'était pas dans le mot, on perd un essai
-                if (!lettreTrouvee)
+                Console.WriteLine("\nMot : " + affichage);
+                Console.WriteLine("Vies restantes : " + vies);
+
+                // Si y'a plus de tirets dans l'affichage on a gagné
+                if (!affichage.Contains("_"))
                 {
-                    essaisRestants--;
-                    Console.WriteLine("Lettre incorrecte !");
-                }
-                else
-                {
-                    Console.WriteLine("Bonne lettre !");
+                    Console.WriteLine("Bravo, tu as gagné !");
+                    return;
                 }
 
-                // --- 4. VÉRIFICATION DE LA VICTOIRE ---
+                // Demander une lettre
+                Console.Write("Tape une lettre : ");
+                string saisie = Console.ReadLine().ToUpper();
                 
-                // Si le mot caché est redevenu identique au mot secret, c'est gagné
-                if (new string(motCache) == motSecret)
+                // Petite sécurité pour éviter un crash si on appuie juste sur "Entrée"
+                if (saisie.Length == 0) continue; 
+                
+                char lettreJoueur = saisie[0]; // On prend la première lettre tapée
+                lettresTestees += lettreJoueur; // On la mémorise
+
+                // Si la lettre n'est pas dans le mot secret on perd une vie
+                if (!motSecret.Contains(lettreJoueur))
                 {
-                    motTrouve = true;
+                    vies--;
                 }
             }
 
-            // --- 5. FIN DE LA PARTIE ---
+            // Si la boucle se termine donc qu'on a plus de vies la boucle s'arrête
+            Console.WriteLine("\nPerdu ! Le mot était : " + motSecret);
             
-            Console.WriteLine("\n------------------------------");
-            if (motTrouve)
-            {
-                Console.WriteLine($"Félicitations ! Vous avez gagné. Le mot était bien : {motSecret}");
-            }
-            else
-            {
-                Console.WriteLine($"Dommage... Vous avez perdu. Le mot secret était : {motSecret}");
-            }
-
-            // Empêcher la console de se fermer toute seule à la fin
-            Console.WriteLine("\nAppuyez sur une touche pour quitter...");
-            Console.ReadKey();
+            Console.ReadLine(); // Pause pour voir le résultat
         }
     }
 }
